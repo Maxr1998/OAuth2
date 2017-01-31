@@ -66,6 +66,12 @@ typedef struct _oauth2_config
     oauth2_error last_error;
 } oauth2_config;
 
+typedef struct _oauth2_tokens
+{
+    char* access_token;
+    char* refresh_token;
+} oauth2_tokens;
+
 //Methods
 
 //Initialiser
@@ -77,7 +83,7 @@ void oauth2_set_auth_code(oauth2_config* conf, char* auth_code);
 
 //Returns URL to redirect user to.
 char* oauth2_request_auth_code(oauth2_config* conf, char* auth_server, char* scope, char* state);
-char* oauth2_access_auth_code(oauth2_config* conf, char* auth_server, char* auth_code, char* scope);
+oauth2_tokens oauth2_access_tokens(oauth2_config* conf, char* auth_server, char* auth_code);
 char* oauth2_access_resource_owner(oauth2_config* conf, char* auth_server, char* username, char* password);
 char* oauth2_access_refresh_token(oauth2_config* conf, char* refresh_token);
 char* oauth2_request(oauth2_config* conf, char* uri, char* params);  

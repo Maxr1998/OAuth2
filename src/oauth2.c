@@ -129,17 +129,22 @@ char* oauth2_request_auth_code(oauth2_config* conf, char* auth_server, char* sco
     return final_str;
 }
 
-char* oauth2_access_auth_code(oauth2_config* conf, char* auth_server, char* auth_code, char* scope)
+oauth2_tokens oauth2_access_tokens(oauth2_config* conf, char* auth_server, char* auth_code)
 {
     //Build up the request
+    oauth2_tokens res;
     char* uri;
     char* query_fmt;
     char* output;
-    char* acc_code;
     int query_len;
-    char* acc_pos_s;
-    char* acc_pos_e;
-    int acc_pos_len;
+
+    char *acc_find_rule = "\"access_token\" : \"";
+    char *ref_find_rule = "\"refresh_token\" : \"";
+    char* acc_code;
+    char* ref_code;
+    char* pos_s;
+    char* pos_e;
+    int pos_len;
 
     assert(conf != NULL);
     assert(auth_server != NULL);
@@ -153,28 +158,52 @@ char* oauth2_access_auth_code(oauth2_config* conf, char* auth_server, char* auth
     output = curl_make_request(auth_server, uri);
     free(uri);
 
+    printf("%s\n", output);
+
     //Strip out the access token
-    acc_pos_s = strstr(output, "access_token=");
-    if(acc_pos_s == NULL)
+    pos_s = NULL;
+    pos_e = NULL;
+    pos_len = 0;
+    pos_s = strstr(output, acc_find_rule);
+    if(pos_s != NULL)
     {
-        printf("%s\n", output);
-        free(output);
-        return NULL;
+        pos_s += strlen(acc_find_rule); //Skip past rule
+        //Find the end of the token
+        pos_e = pos_s;
+        while(*pos_e != '\"' && *pos_e != '\0') ++pos_e;
+
+        //Now extract it
+        pos_len = pos_e-pos_s;
+        acc_code = malloc(pos_len);
+
+        strncpy(acc_code, pos_s, pos_len);
+        *(acc_code + pos_len) = '\0'; //Manually end the string at the right position
     }
-    
-    acc_pos_s += 13; //Skip past access_token
-    //Find the end of the token
-    acc_pos_e = acc_pos_s;
-    while(*acc_pos_e != '&' && *acc_pos_e != '\0') ++acc_pos_e;
 
-    //Now extract it
-    acc_pos_len = acc_pos_e-acc_pos_s;
-    acc_code = malloc(sizeof(char)*acc_pos_len);
+    //Strip out the refresh token
+    pos_s = NULL;
+    pos_e = NULL;
+    pos_len = 0;
+    pos_s = strstr(output, ref_find_rule);
+    if(pos_s != NULL)
+    {
+        pos_s += strlen(ref_find_rule); //Skip past rule
+        //Find the end of the token
+        pos_e = pos_s;
+        while(*pos_e != '"' && *pos_e != '\0') ++pos_e;
 
-    memcpy(acc_code, acc_pos_s, acc_pos_e-acc_pos_s);
+        //Now extract it
+        pos_len = pos_e-pos_s;
+        ref_code = malloc(pos_len);
+
+        strncpy(ref_code, pos_s, pos_len);
+        *(ref_code + pos_len) = '\0'; //Manually end the string at the right position
+    }
     free(output);
 
-    return acc_code;
+    res.access_token = acc_code;
+    res.refresh_token = ref_code;
+    return res;
 }
 
 char* oauth2_access_resource_owner(oauth2_config* conf, char* auth_server, char* username, char* password)
@@ -193,10 +222,10 @@ char* oauth2_access_resource_owner(oauth2_config* conf, char* auth_server, char*
 
     //Get the length of the query
     query_len = snprintf(NULL, 0, query_fmt, conf->client_id, username, password);
-    
+
     //Allocate space for it and request
     uri = malloc(query_len+1);
-    
+
     sprintf(uri, query_fmt, conf->client_id, username, password);
 
     //Now make the request!
@@ -204,7 +233,7 @@ char* oauth2_access_resource_owner(oauth2_config* conf, char* auth_server, char*
 
     //Cleanup
     free(uri);
-    
+
     return output;
 }
 
@@ -219,7 +248,7 @@ char* oauth2_request(oauth2_config* conf, char* uri, char* params)
     //For now, we'll just include the access code with the request vars
     //This is discouraged, but I don't know if most providers actually
     //support the header-field method (Facebook is still at draft 0...)
-    
+
     char* retVal;
     char* uri2;
     int uri_len;
@@ -229,7 +258,7 @@ char* oauth2_request(oauth2_config* conf, char* uri, char* params)
     assert(conf->client_id != NULL);
     assert(conf->auth_code != NULL);
     assert(uri != NULL);
-    
+
     //Are we POSTing?
     if(params != NULL)
     {
@@ -259,6 +288,6 @@ void oauth2_cleanup(oauth2_config* conf)
 
     if(conf->client_secret != NULL)
         free(conf->client_secret);
-    
+
     free(conf);
 }
