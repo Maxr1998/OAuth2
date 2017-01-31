@@ -88,6 +88,6 @@ char* oauth2_access_resource_owner(oauth2_config* conf, char* auth_server, char*
 char* oauth2_access_refresh_token(oauth2_config* conf, char* refresh_token);
 char* oauth2_request(oauth2_config* conf, char* uri, char* params);
 void oauth2_cleanup(oauth2_config* conf);
-
+void oauth2_tokens_cleanup(oauth2_tokens tokens);
 
 #endif

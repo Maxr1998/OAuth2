@@ -294,3 +294,9 @@ void oauth2_cleanup(oauth2_config* conf)
 
     free(conf);
 }
+
+void oauth2_tokens_cleanup(oauth2_tokens tokens)
+{
+    free(tokens.access_token);
+    free(tokens.refresh_token);
+}
