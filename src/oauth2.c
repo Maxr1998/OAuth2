@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -129,14 +130,16 @@ char* oauth2_request_auth_code(oauth2_config* conf, char* auth_server, char* sco
     return final_str;
 }
 
-oauth2_tokens oauth2_access_tokens(oauth2_config* conf, char* auth_server, char* auth_code)
+oauth2_tokens oauth2_access_tokens(oauth2_config* conf, char* auth_server, char* auth_code, bool is_refresh_token)
 {
     //Build up the request
     oauth2_tokens res;
-    char* uri;
+    char* grant_type = is_refresh_token ? "refresh_token" : "authorization_code";
+    char* code_arg = is_refresh_token ? "refresh_token" : "code";
     char* query_fmt;
-    char* output;
     int query_len;
+    char* uri;
+    char* output;
 
     char *acc_find_rule = "\"access_token\" : \"";
     char *ref_find_rule = "\"refresh_token\" : \"";
@@ -150,11 +153,11 @@ oauth2_tokens oauth2_access_tokens(oauth2_config* conf, char* auth_server, char*
     assert(auth_server != NULL);
     assert(auth_code != NULL);
 
-    query_fmt = "grant_type=authorization_code&client_id=%s&client_secret=%s&code=%s&redirect_uri=%s";
+    query_fmt = "grant_type=%s&client_id=%s&client_secret=%s&%s=%s&redirect_uri=%s";
 
-    query_len = snprintf(NULL, 0, query_fmt, conf->client_id, conf->client_secret, auth_code, conf->redirect_uri);
+    query_len = snprintf(NULL, 0, query_fmt, grant_type, conf->client_id, conf->client_secret, code_arg, auth_code, conf->redirect_uri);
     uri = malloc(sizeof(char)*query_len);
-    sprintf(uri, query_fmt, conf->client_id, conf->client_secret, auth_code, conf->redirect_uri);
+    sprintf(uri, query_fmt, grant_type, conf->client_id, conf->client_secret, code_arg, auth_code, conf->redirect_uri);
     output = curl_make_request(auth_server, uri);
     free(uri);
 
