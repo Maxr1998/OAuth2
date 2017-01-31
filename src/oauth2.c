@@ -143,8 +143,8 @@ oauth2_tokens oauth2_access_tokens(oauth2_config* conf, char* auth_server, char*
 
     char *acc_find_rule = "\"access_token\" : \"";
     char *ref_find_rule = "\"refresh_token\" : \"";
-    char* acc_code;
-    char* ref_code;
+    char* acc_code = NULL;
+    char* ref_code = NULL;
     char* pos_s;
     char* pos_e;
     int pos_len;
@@ -160,8 +160,6 @@ oauth2_tokens oauth2_access_tokens(oauth2_config* conf, char* auth_server, char*
     sprintf(uri, query_fmt, grant_type, conf->client_id, conf->client_secret, code_arg, auth_code, conf->redirect_uri);
     output = curl_make_request(auth_server, uri);
     free(uri);
-
-    printf("%s\n", output);
 
     //Strip out the access token
     pos_s = NULL;
