@@ -77,19 +77,17 @@ char* curl_request(char* url, struct curl_slist *headers, int method, char* para
       curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
     }
 
-    if (method == METHOD_GET || params == NULL) {
-      // Get, do nothing
-    } else {
-      if (method == METHOD_POST) {
+    if ((method == METHOD_POST || method == METHOD_PUT) && params != NULL)
+    {
+      if (method == METHOD_POST)
+      {
           curl_easy_setopt(handle, CURLOPT_POST, 1);
-      } else if (method == METHOD_PUT) {
+      }
+      else if (method == METHOD_PUT)
+      {
           curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "PUT");
       }
-      //Do we need to add the POST parameters?
-      if(params != NULL)
-      {
-          curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, params); //Copy them just in case the user does something stupid
-      }
+      curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, params); //Copy them just in case the user does something stupid
     }
 
     if(curl_easy_perform(handle) != 0)
