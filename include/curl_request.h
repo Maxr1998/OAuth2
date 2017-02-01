@@ -23,9 +23,13 @@ THE SOFTWARE.
 #ifndef __CURL_REQUEST_H__
 #define __CURL_REQUEST_H__
 
+#define METHOD_GET  1
+#define METHOD_POST 2
+#define METHOD_PUT  3
+
 #include <curl/curl.h>
 
 char* curl_make_request(char* url, char* params);
-char* curl_make_request_w_header(char* url, struct curl_slist *headers, char* params);
+char* curl_request(char* url, struct curl_slist *headers, int method, char* params);
 
 #endif
