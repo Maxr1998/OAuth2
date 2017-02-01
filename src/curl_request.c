@@ -52,6 +52,11 @@ size_t curl_callback(void *response, size_t size, size_t nmemb, void *userdata)
 
 char* curl_make_request(char* url, char* params)
 {
+    return curl_make_request_w_header(url, NULL, params);
+}
+
+char* curl_make_request_w_header(char* url, struct curl_slist *headers, char* params)
+{
     struct Storage storage;
     CURL* handle;
     int data_len;
@@ -73,6 +78,11 @@ char* curl_make_request(char* url, char* params)
         curl_easy_setopt(handle, CURLOPT_POST, 1);
         curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, params); //Copy them just incase
                                                                   //the user does something stupid
+    }
+
+    if (headers != NULL)
+    {
+      curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
     }
 
     if(curl_easy_perform(handle) != 0)
