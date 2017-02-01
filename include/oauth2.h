@@ -23,6 +23,8 @@ THE SOFTWARE.
 #ifndef __OAUTH2_H__
 #define __OAUTH2_H__
 
+#include <stdbool.h>
+
 //Constants
 #ifndef NULL
   #define NULL 0
