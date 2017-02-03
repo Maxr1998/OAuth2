@@ -238,12 +238,6 @@ char* oauth2_access_resource_owner(oauth2_config* conf, char* auth_server, char*
     return output;
 }
 
-char* oauth2_access_refresh_token(oauth2_config* conf, char* refresh_token)
-{
-    assert(0);
-    return NULL;
-}
-
 char* oauth2_request(oauth2_config* conf, char* uri, char* params)
 {
     //For now, we'll just include the access code with the request vars
