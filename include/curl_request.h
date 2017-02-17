@@ -30,6 +30,6 @@ THE SOFTWARE.
 #include <curl/curl.h>
 
 char* curl_make_request(char* url, char* params);
-char* curl_request(char* url, struct curl_slist *headers, int method, char* params);
+char* curl_request(CURL* h, char* url, struct curl_slist *headers, int method, char* params);
 
 #endif

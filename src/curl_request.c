@@ -52,10 +52,10 @@ size_t curl_callback(void *response, size_t size, size_t nmemb, void *userdata)
 
 char* curl_make_request(char* url, char* params)
 {
-    return curl_request(url, NULL, METHOD_POST, params);
+    return curl_request(NULL, url, NULL, METHOD_POST, params);
 }
 
-char* curl_request(char* url, struct curl_slist *headers, int method, char* params)
+char* curl_request(CURL* h, char* url, struct curl_slist *headers, int method, char* params)
 {
     struct Storage storage;
     CURL* handle;
@@ -67,7 +67,16 @@ char* curl_request(char* url, struct curl_slist *headers, int method, char* para
     storage.data = malloc(1);
     storage.size = 0;
 
-    handle = curl_easy_init();
+    if (h != NULL)
+    {
+      handle = h;
+      curl_easy_reset(handle);
+    }
+    else
+    {
+      handle = curl_easy_init();
+    }
+
     curl_easy_setopt(handle, CURLOPT_URL, url);
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, curl_callback);
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void *)&storage);
@@ -98,8 +107,10 @@ char* curl_request(char* url, struct curl_slist *headers, int method, char* para
         return NULL;
     }
 
-
     //Cleanup
-    curl_easy_cleanup(handle);
+    if (h == NULL)
+    {
+      curl_easy_cleanup(handle);
+    }
     return storage.data;
 }
